@@ -1,0 +1,26 @@
+{
+  "name": "sport-broadcast-app-webscoket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShardulVanage/sport-broadcast-app-webscoket.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ShardulVanage/sport-broadcast-app-webscoket/issues"
+  },
+  "homepage": "https://github.com/ShardulVanage/sport-broadcast-app-webscoket#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
