@@ -29,33 +29,14 @@ export const matchIdParamSchema = z.object({
  * Schema to validate match creation payload
  * Includes validation for ISO date strings and chronological ordering
  */
+
 export const createMatchSchema = z
   .object({
     sport: z.string().min(1, 'Sport must be a non-empty string'),
     homeTeam: z.string().min(1, 'Home team must be a non-empty string'),
     awayTeam: z.string().min(1, 'Away team must be a non-empty string'),
-    startTime: z.string().refine(
-      (value) => {
-        try {
-          const date = new Date(value);
-          return !isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value);
-        } catch {
-          return false;
-        }
-      },
-      { message: 'startTime must be a valid ISO date string' }
-    ),
-    endTime: z.string().refine(
-      (value) => {
-        try {
-          const date = new Date(value);
-          return !isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value);
-        } catch {
-          return false;
-        }
-      },
-      { message: 'endTime must be a valid ISO date string' }
-    ),
+    startTime: z.iso.datetime(),
+    endTime: z.iso.datetime(),
     homeScore: z.coerce.number().int().nonnegative().optional(),
     awayScore: z.coerce.number().int().nonnegative().optional(),
   })
