@@ -29,7 +29,7 @@ export const matchIdParamSchema = z.object({
  * Schema to validate match creation payload
  * Includes validation for ISO date strings and chronological ordering
  */
-
+ 
 export const createMatchSchema = z
   .object({
     sport: z.string().min(1, 'Sport must be a non-empty string'),
