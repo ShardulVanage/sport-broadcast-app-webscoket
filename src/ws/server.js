@@ -23,23 +23,38 @@ export function attachWebSocketServer(server) {
     maxPayload: 1024 * 1024
   });
 
-  wss.on('connection', async (socket,request) => {
-    if(wsArcjet){
-      try{
-         const decision = await wsArcjet.protect({request});
-        if(decision.isDenied()){
-          const code = decision.reason.isRateLimit() ? 1003 : 1008; // 1008: Policy Violation, 1003: Unsupported Data
-          const reason = decision.reason.isRateLimit() ? 'Rate limit exceeded' : 'Access denied';
-          socket.close(code, reason);
-          return;
-        }
-      }catch(e){
-        console.error('WS connection error', e);
-        // close with a generic policy violation if we hit an unexpected error
-        socket.close(1008, 'Internal server error');
+  // Validate WebSocket upgrade requests with Arcjet before the handshake
+  server.on('upgrade', async (req, socket, head) => {
+    if (!wsArcjet) {
+      wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+      return;
+    }
+
+    try {
+      const decision = await wsArcjet.protect(req);
+      if (decision.isDenied()) {
+        const status = decision.reason.isRateLimit() ? 429 : 403;
+        const message = decision.reason.isRateLimit() ? 'Rate limit exceeded' : 'Access denied';
+        const statusText = status === 429 ? 'Too Many Requests' : 'Forbidden';
+        const res = `HTTP/1.1 ${status} ${statusText}\r\nConnection: close\r\nContent-Type: text/plain\r\nContent-Length: ${Buffer.byteLength(message)}\r\n\r\n${message}`;
+        try { socket.write(res); } catch (err) {}
+        socket.destroy();
         return;
       }
+
+      // Allowed — proceed with the WebSocket handshake
+      wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+    } catch (e) {
+      console.error('WS upgrade error', e);
+      const message = 'Internal server error';
+      const res = `HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\nContent-Type: text/plain\r\nContent-Length: ${Buffer.byteLength(message)}\r\n\r\n${message}`;
+      try { socket.write(res); } catch (err) {}
+      socket.destroy();
     }
+  });
+
+  // Connection handler no longer performs pre-handshake validation — it assumes the upgrade was validated
+  wss.on('connection', (socket, request) => {
     socket.isAlive = true;
 
     socket.on('pong', () => {

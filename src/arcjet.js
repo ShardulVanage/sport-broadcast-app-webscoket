@@ -4,8 +4,9 @@ const arcjetKey = process.env.ARCJET_KEY;
 // Arcjet modes are either LIVE or DRY_RUN; default to LIVE when not explicitly DRY_RUN
 const arcjetMode = process.env.ARCJET_MODE === 'DRY_RUN' ? 'DRY_RUN' : 'LIVE';
 
-if (!arcjetKey) throw new Error('ARCJET_KEY is not set in environment variables');
-
+if (!arcjetKey) {
+ console.warn('ARCJET_KEY is not set; Arcjet protections are disabled.');
+}
 export const  httpArcjet =arcjetKey?
 arcjet({
     key: arcjetKey,
@@ -38,10 +39,10 @@ export function securityMiddleware(){
                 if(decision.reason.isRateLimit()){
                     return res.status(429).json({error:'too many requests.'})
                 }
-                return res.status(403).json({error:'Forrbidden'})
+                return res.status(403).json({error:'Forbidden'})
             }
         }catch(e){
-            console.error('Arjet middleware error',e);
+            console.error('Arcjet  middleware error',e);
             return res.status(503).json({error:'Service Unavailable'}); 
         }
         next();

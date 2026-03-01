@@ -1,11 +1,13 @@
+import 'dotenv/config'; 
 import express from 'express';
 import http from 'http';
 import { matchRouter } from './routes/matches.js';
 import { attachWebSocketServer } from './ws/server.js';
 import { securityMiddleware } from './arcjet.js';
-import 'dotenv/config'; 
-console.log('ARCJET_ENV:', process.env.ARCJET_ENV); // should print "development"
-console.log('ARCJET_KEY:', process.env.ARCJET_KEY ? 'set ✅' : 'missing ❌');
+if (process.env.NODE_ENV !== 'production') {
+  console.log('ARCJET_ENV:', process.env.ARCJET_ENV);
+  console.log('ARCJET_KEY:', process.env.ARCJET_KEY ? 'set ✅' : 'missing ❌');
+}
 
 
 
